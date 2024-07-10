@@ -6,6 +6,7 @@ import { sign, verify } from "jsonwebtoken";
 import config from "../config";
 
 
+
 export async function login(body:Pick<User,'email' | 'password'>){
     const existingUser = getUserByEmail(body.email);
 
@@ -30,6 +31,7 @@ export async function login(body:Pick<User,'email' | 'password'>){
         id:existingUser.id,
         name: existingUser.name,
         email:existingUser.email,
+        permissions: existingUser.permissions
     };
     
     const accessToken = await sign(payload, config.jwt.secret!,{

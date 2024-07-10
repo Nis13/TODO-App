@@ -2,9 +2,8 @@ import { query, Request, Response } from "express";
 import * as UserService from '../service/user';
 import { GetUserQuery } from "../interface/user";
 
-export function getUsers(req: Request<any,any,any,GetUserQuery>, res: Response) {
-        const {query} = req;
-        const data = UserService.getUsers(query);
+export function getUsers(req: Request, res: Response) {
+        const data = UserService.getUsers();
         res.json(data)
 };
 

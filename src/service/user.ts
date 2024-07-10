@@ -20,8 +20,8 @@ export async function createUser(user:User){
 
 }
 
-export function getUsers(query:GetUserQuery){
-    return userModel.getUsers(query);
+export function getUsers(){
+    return userModel.getUsers();
 }
 
 

@@ -1,22 +1,23 @@
 import express from "express";
 
-import {auth } from "../middleware/auth";
+import {authenticate, authorize } from "../middleware/auth";
 import { getUsers, getUserById, createUser } from "../controller/user";
 
 const router = express();
 
 
-router.get('/' , auth, getUsers);
+router.get('/' , authenticate,authorize('admin'), getUsers);
 
-router.get("/:id", getUserById);
+router.get("/:id",authenticate,authorize('admin'), getUserById);
 
-router.post('/signup', createUser);
-router.put('/:id', (req, res) => {
+router.post('/signup',authenticate,authorize('admin'), createUser);
+
+router.put('/:id',authenticate, authorize('admin'),(req, res) => {
     res.json({
         message: "user updated",
     })
 })
-router.delete('/:id', (req, res) => {
+router.delete('/:id',authenticate,authorize('admin'), (req, res) => {
     res.json({
         message: "user deleted",
     })
