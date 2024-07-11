@@ -1,43 +1,80 @@
-import {  Response } from "express";
+import HttpStatusCodes from "http-status-codes";
+import { NextFunction, Response } from "express";
 import * as TaskService from "../service/task";
-import { Request } from '../interface/auth';
+import { Request } from "../interface/auth";
+import { NotFoundError } from "../error/NotFoundError";
+import { BadRequestError } from "../error/BadRequestError";
 
-export function getAllTasks(req:Request, res:Response){
+export function getAllTasks(req: Request, res: Response, next: NextFunction) {
+  try {
     const userId = req.user?.id;
     const data = TaskService.getAllTasks(userId!);
-    res.json(data);
-};
+    res.status(HttpStatusCodes.OK).json(data);
+  } catch (error) {
+    next(error);
+  }
+}
 
-export function getTaskById(req:Request, res:Response){
+export function getTaskById(req: Request, res: Response, next: NextFunction) {
+  try {
     const userId = req.user?.id;
-    const {id} = req.params;
-    const data = TaskService.getTaskById(parseInt(id,10),userId!);
-    res.json(data);
-};
+    const { id } = req.params;
+    const data = TaskService.getTaskById(parseInt(id, 10), userId!);
+    if (!data) {
+      throw new NotFoundError(`Task with ID ${id} not found`);
+    }
 
-export function createTask(req:Request, res:Response){
+    res.status(HttpStatusCodes.OK).json(data);
+  } catch (error) {
+    next(error);
+  }
+}
+
+export function createTask(req: Request, res: Response, next: NextFunction) {
+  try {
     const userId = req.user?.id;
     const task = req.body;
     if (!task || !task.title) {
-        res.json({error:"task's title is required"});
+      throw new BadRequestError("Task title is required");
     }
-    const data = TaskService.addTask(task.title,task.completed,userId!);
-    res.json(data)
+    const data = TaskService.addTask(task.title, task.completed, userId!);
+    res.status(HttpStatusCodes.CREATED).json(data);
+  } catch (error) {
+    next(error);
+  }
 }
 
-export function updateTask(req:Request, res:Response){
+export function updateTask(req: Request, res: Response, next: NextFunction) {
+  try {
     const userId = req.user?.id;
-    const id = req.params.id;
-    const {title, completed} = req.body;
-    
-    const data = TaskService.updateTask(parseInt(id),title,completed,userId!);
-    res.json(data);
+    const { id } = req.params;
+    const { title, completed } = req.body;
+    if (!title) {
+      throw new BadRequestError("Task title is required");
+    }
+    const data = TaskService.updateTask(
+      parseInt(id),
+      title,
+      completed,
+      userId!
+    );
+    if (!data) {
+      throw new NotFoundError(`Task with ID ${id} not found`);
+    }
+    res.status(HttpStatusCodes.OK).json(data);
+  } catch (error) {
+    next(error);
+  }
 }
 
-export function deleteTask(req:Request, res:Response){
+export function deleteTask(req: Request, res: Response, next: NextFunction) {
+  try {
     const userId = req.user?.id;
-    const id = req.params.id;
-    TaskService.deleteTask(parseInt(id),userId!);
+    const { id } = req.params;
+    TaskService.deleteTask(parseInt(id, 10), userId!);
     const data = TaskService.getAllTasks(userId!);
     res.json(data);
+  } catch (error) {
+    next(error);
+  }
 }
