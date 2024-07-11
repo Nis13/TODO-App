@@ -9,6 +9,7 @@ export function getAllTasks(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = req.user?.id;
     const data = TaskService.getAllTasks(userId!);
+    if(!data) throw(new BadRequestError("users not accessible"));
     res.status(HttpStatusCodes.OK).json(data);
   } catch (error) {
     next(error);
@@ -71,7 +72,8 @@ export function deleteTask(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = req.user?.id;
     const { id } = req.params;
-    TaskService.deleteTask(parseInt(id, 10), userId!);
+    const deletedData = TaskService.deleteTask(parseInt(id, 10), userId!);
+    if(!deletedData) throw(new BadRequestError("user doesn't exists"));
     const data = TaskService.getAllTasks(userId!);
     res.json(data);
   } catch (error) {

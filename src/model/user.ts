@@ -46,15 +46,13 @@ export function getUserByEmail(email:string){
 export const updateUser = (id: number, updatedUser: User): User => {
     logger.info(`update user by id`);
     let user = users.find(({ id: userId }) => userId === id);
-  
     user = { ...user, ...updatedUser };
-  
     users = [...users.filter(({ id: userId }) => userId !== id), user];
   
     return user;
   };
 
-  export function deleteUser(id: number) {
+export function deleteUser(id: number) {
     logger.info(`delete user by id`);
     return (users = users.filter((user) =>user.id !== id));
-  }
+}

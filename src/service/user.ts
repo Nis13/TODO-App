@@ -15,9 +15,7 @@ export function getUserById(id:number){
     logger.info(`get user by id`);
     const data = userModel.getUserById(id);
     if (!data){
-        return{
-            err: `data of user id: ${id} not found`,
-        }
+        throw(new NotFoundError('user not found'));
     }
     return data;
 };
@@ -33,20 +31,16 @@ export async function createUser(user:User){
 export function getUserByEmail(email:string){
     logger.info(`get user by email`);
     const data = userModel.getUserByEmail(email);
-   
     return data;
 };
 
 export function updateUser(id: number, updatedUser: User){
     logger.info(`update user by id`);
     const userExists = userModel.getUserById(id);
-  
     if (!userExists) {
       throw new NotFoundError("user not found");
     }
-  
     const data = userModel.updateUser(id, updatedUser);
-  
     return data;
   };
 
@@ -54,7 +48,7 @@ export function updateUser(id: number, updatedUser: User){
     logger.info(`delete user by id`);
     const userToDelete = userModel.getUserById(id);
     if (!userToDelete) {
-      return userToDelete;
+      throw (new NotFoundError('User not found'));
     }
     return userModel.deleteUser(id);
   }

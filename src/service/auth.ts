@@ -5,6 +5,7 @@ import { getUserByEmail } from "./user";
 import { sign, verify } from "jsonwebtoken";
 import config from "../config";
 import loggerWithNameSpace from "../utilis/logger";
+import { BadRequestError } from "../error/BadRequestError";
 
 const logger = loggerWithNameSpace("Auth Service");
 
@@ -13,9 +14,7 @@ export async function login(body: Pick<User, "email" | "password">) {
   const existingUser = getUserByEmail(body.email);
 
   if (!existingUser) {
-    return {
-      error: "invalid email",
-    };
+    throw (new BadRequestError("Invalid Email"));
   }
 
   const isValidPassword = await bcrypt.compare(
@@ -24,11 +23,9 @@ export async function login(body: Pick<User, "email" | "password">) {
   );
 
   if (!isValidPassword) {
-    return {
-      error: " password",
-    };
+    throw( new BadRequestError("Invalid Password"))
   }
-
+  
   const payload = {
     id: existingUser.id,
     name: existingUser.name,
@@ -51,9 +48,7 @@ export async function refresh(body: { refreshToken: string }) {
   const { refreshToken } = body;
 
   if (!refreshToken) {
-    return {
-      error: "enter refresh token",
-    };
+    throw (new BadRequestError('please enter the refresh token'));
   }
   const decoded = verify(refreshToken, config.jwt.secret!);
   if (typeof decoded === "string") {

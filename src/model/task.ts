@@ -76,4 +76,5 @@ export function deleteTaskById(id: number, userId: number) {
   if (taskIndex != -1) {
     tasks.splice(taskIndex, 1);
   }
+  return tasks[taskIndex];
 }

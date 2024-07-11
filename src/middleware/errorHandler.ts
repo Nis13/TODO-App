@@ -6,11 +6,11 @@ import { NotFoundError } from "../error/NotFoundError";
 import { BadRequestError } from "../error/BadRequestError";
 import loggerWithNameSpace from "../utilis/logger";
 
-export function notFoundError(req:Request , res:Response){
-    return res.status(HttpStatusCodes.NOT_FOUND).json({
-        message: "Not Found",
-    })
-}
+// export function notFoundError(req:Request , res:Response){
+//     return res.status(HttpStatusCodes.NOT_FOUND).json({
+//         message: "Not Found",
+//     })
+// }
 
 const logger = loggerWithNameSpace("ErrorHandler");
 

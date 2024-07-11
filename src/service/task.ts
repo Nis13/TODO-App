@@ -1,3 +1,4 @@
+import { NotFoundError } from "../error/NotFoundError";
 import * as TaskModel from "../model/task";
 import loggerWithNameSpace from "../utilis/logger";
 
@@ -6,17 +7,13 @@ const logger = loggerWithNameSpace("task Service");
 export function getAllTasks(userID: number) {
   logger.info("get all tasks");
   const data = TaskModel.getAllTasks(userID);
-  if (!data) {
-    return {
-      err: ` task  not found`,
-    };
-  }
   return data;
 }
 
 export function getTaskById(id: number, userId: number) {
   logger.info("get task by id");
   const data = TaskModel.getTaskById(id, userId);
+  if (!data) throw(new NotFoundError("Task doesn't exists"));
   return data;
 }
 
@@ -42,5 +39,7 @@ export function updateTask(
 
 export function deleteTask(id: number, userId: number) {
   logger.info("delete task by id");
-  TaskModel.deleteTaskById(id, userId);
+  const data = TaskModel.deleteTaskById(id, userId);
+  if (!data) throw(new NotFoundError("task doesn't exists"));
+  return data;
 }

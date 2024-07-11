@@ -7,6 +7,9 @@ import { NotFoundError } from "../error/NotFoundError";
 export function getUsers(req: Request, res: Response, next: NextFunction) {
   try {
     const data = UserService.getUsers();
+    if (!data){
+      throw(new BadRequestError("users data no accessible"));
+    }
     res.status(HttpStatusCodes.OK).json(data);
   } catch (error) {
     next(error);
@@ -58,21 +61,26 @@ export async function updateUser(
 
     const user = UserService.updateUser(parseInt(userId), updatedUser);
 
+    if (!user) throw(new BadRequestError("user can't be updated"));
     res.status(HttpStatusCodes.OK).json({
       message: "User updated successfully",
       data: [user],
     });
   } catch (error) {
-    next(new BadRequestError("user can't be updated"));
+    next(error);
   }
 }
 
 export function deleteUser(req: Request, res: Response, next: NextFunction) {
-  const { id } = req.params;
-  const data = UserService.deleteUser(parseInt(id));
-  if (!data) {
-    next(new NotFoundError(`User with id ${id} not found`));
-    return;
+  try{
+    const { id } = req.params;
+    const data = UserService.deleteUser(parseInt(id));
+    if (!data) {
+      throw(new NotFoundError(`User with id ${id} not found`));
+    }
+    res.status(HttpStatusCodes.OK).json(data);
   }
-  res.status(HttpStatusCodes.OK).json(data);
+  catch(error){
+    next(error);
+  }
 }
