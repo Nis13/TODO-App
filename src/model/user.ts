@@ -1,4 +1,3 @@
-import { permission } from "process";
 import { GetUserQuery, User } from "../interface/user";
 import loggerWithNameSpace from "../utilis/logger";
 
@@ -24,6 +23,13 @@ export function getUsers(){
 export function getUserById(id:number){
     logger.info(`get user by id`);
     return users.find(({id:userId})=>userId === id);
+};
+
+export function getUserByQuery(query:GetUserQuery){
+    const { q } = query;
+    if (q){
+        return users.find(({id:userId})=>userId === parseInt(q));
+    }
 };
 
 export function createUser(user: User){

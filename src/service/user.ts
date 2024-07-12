@@ -1,4 +1,4 @@
-import {  User } from "../interface/user";
+import {  GetUserQuery, User } from "../interface/user";
 import * as userModel from "../model/user";
 import bcrypt from "bcrypt";
 import { NotFoundError } from '../error/NotFoundError';
@@ -19,6 +19,12 @@ export function getUserById(id:number){
     }
     return data;
 };
+
+export function getUserByQuery(query:GetUserQuery){
+  const data = userModel.getUserByQuery(query);
+  if (!data) throw (new NotFoundError('user not found'));
+  return data;
+}
 
 export async function createUser(user:User){
     logger.info(`create user`);

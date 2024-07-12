@@ -1,4 +1,5 @@
 import { Task } from "../interface/task";
+import { GetUserQuery } from "../interface/user";
 import loggerWithNameSpace from "../utilis/logger";
 
 const logger = loggerWithNameSpace("task Model");
@@ -41,17 +42,25 @@ export function getAllTasks(userId: number) {
   const tasksList = tasks.filter((task) => task.userId == userId);
   return tasksList;
 }
+
 export function getTaskById(id: number, userId: number) {
   logger.info(`get task by id`);
   const tasksList = tasks.filter((task) => task.userId == userId);
   return tasksList.find(({ id: taskId }) => taskId === id);
 }
+export function getTaskByQuery(query:GetUserQuery,userId: number){
+  const { q } = query;
+    if (q){
+        const tasksList = tasks.filter((task) => task.userId == userId);
+        return tasksList.find(({id:taskId})=>taskId === parseInt(q));
+    }
+}
 
-export function addTask(title: string, completed: boolean, userId: number) {
+export function addTask(title: string, userId: number) {
   logger.info(`create task`);
   tasks.push({
     title: title,
-    completed: completed,
+    completed: false,
     id: tasks[tasks.length - 1].id + 1,
     userId: userId,
   });

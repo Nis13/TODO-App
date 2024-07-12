@@ -1,4 +1,5 @@
 import { NotFoundError } from "../error/NotFoundError";
+import { GetUserQuery } from "../interface/user";
 import * as TaskModel from "../model/task";
 import loggerWithNameSpace from "../utilis/logger";
 
@@ -17,9 +18,15 @@ export function getTaskById(id: number, userId: number) {
   return data;
 }
 
-export function addTask(title: string, completed: boolean, userId: number) {
+export function getTaskByQuery(query:GetUserQuery,userId: number){
+  const data = TaskModel.getTaskByQuery(query,userId);
+  if (!data) throw (new NotFoundError('Task not found'));
+  return data;
+}
+
+export function addTask(title: string, userId: number) {
   logger.info("add task");
-  const data = TaskModel.addTask(title, completed, userId);
+  const data = TaskModel.addTask(title, userId);
   return data;
 }
 

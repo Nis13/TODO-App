@@ -1,9 +1,11 @@
 import HttpStatusCodes from "http-status-codes";
-import { NextFunction, Response } from "express";
+import { NextFunction, Response, Request as ExpressRequest } from "express";
 import * as TaskService from "../service/task";
 import { Request } from "../interface/auth";
 import { NotFoundError } from "../error/NotFoundError";
 import { BadRequestError } from "../error/BadRequestError";
+import { GetUserQuery } from "../interface/user";
+// import  {Request as ExpressRequest} from "express";
 
 export function getAllTasks(req: Request, res: Response, next: NextFunction) {
   try {
@@ -30,6 +32,13 @@ export function getTaskById(req: Request, res: Response, next: NextFunction) {
     next(error);
   }
 }
+export function getTaskByQuery(
+  req: ExpressRequest<any,any,any,GetUserQuery>, res: Response) {
+  const {query} = req;
+  const userId = (req as Request).user?.id;
+  const data = TaskService.getTaskByQuery(query,userId!);
+  res.json(data)
+};
 
 export function createTask(req: Request, res: Response, next: NextFunction) {
   try {
@@ -38,7 +47,7 @@ export function createTask(req: Request, res: Response, next: NextFunction) {
     if (!task || !task.title) {
       throw new BadRequestError("Task title is required");
     }
-    const data = TaskService.addTask(task.title, task.completed, userId!);
+    const data = TaskService.addTask(task.title, userId!);
     res.status(HttpStatusCodes.CREATED).json(data);
   } catch (error) {
     next(error);
@@ -50,9 +59,6 @@ export function updateTask(req: Request, res: Response, next: NextFunction) {
     const userId = req.user?.id;
     const { id } = req.params;
     const { title, completed } = req.body;
-    if (!title) {
-      throw new BadRequestError("Task title is required");
-    }
     const data = TaskService.updateTask(
       parseInt(id),
       title,

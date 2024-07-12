@@ -3,6 +3,7 @@ import { NextFunction, query, Request, Response } from "express";
 import * as UserService from "../service/user";
 import { BadRequestError } from "../error/BadRequestError";
 import { NotFoundError } from "../error/NotFoundError";
+import { GetUserQuery } from "../interface/user";
 
 export function getUsers(req: Request, res: Response, next: NextFunction) {
   try {
@@ -31,6 +32,12 @@ export function getUserById(req: Request, res: Response, next: NextFunction) {
     next(error);
   }
 }
+
+export function getUserByQuery(req: Request<any,any,any,GetUserQuery>, res: Response) {
+  const {query} = req;
+  const data = UserService.getUserByQuery(query);
+  res.json(data)
+};
 
 export async function createUser(
   req: Request,
