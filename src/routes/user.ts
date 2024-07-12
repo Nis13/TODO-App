@@ -9,6 +9,7 @@ const router = express();
 
 
 router.get('/' , authenticate,authorize('admin'), getUsers);
+
 router.get('/user' , authenticate,authorize('admin'),validateReqQuery(GetUserQuerySchema), getUserByQuery);
 
 router.get("/:id",authenticate,authorize('admin'), getUserById);
