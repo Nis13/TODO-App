@@ -3,6 +3,7 @@ import * as userModel from "../model/user";
 import bcrypt from "bcrypt";
 import { NotFoundError } from '../error/NotFoundError';
 import loggerWithNameSpace from '../utilis/logger';
+import { BadRequestError } from "../error/BadRequestError";
 
 const logger = loggerWithNameSpace("User Service");
 
@@ -28,10 +29,19 @@ export function getUserByQuery(query:GetUserQuery){
 
 export async function createUser(user:User){
     logger.info(`create user`);
+    const existingUser = userModel.getUserByEmail(user.email);
+
+    if (existingUser) {
+      const message = "User already exists";
+      throw new BadRequestError(message);
+    }
+
     const password = await bcrypt.hash(user.password, 10);
     user.password = password;
-    return userModel.createUser(user);
-
+    
+    if (userModel.createUser(user))   return {
+     message:"User created successfully"
+    };;
 }
 
 export function getUserByEmail(email:string){

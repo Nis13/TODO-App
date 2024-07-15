@@ -50,8 +50,7 @@ export async function createUser(
       throw new BadRequestError("name and password are required");
     }
     const data = await UserService.createUser(body);
-    const { password, ...newUser } = data;
-    res.status(HttpStatusCodes.CREATED).json(newUser);
+    res.status(HttpStatusCodes.CREATED).json(data);
   } catch (error) {
     next(error);
   }
