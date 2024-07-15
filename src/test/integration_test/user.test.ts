@@ -18,7 +18,7 @@ describe("User Integration Test Suite", () => {
         .post("/auth/login")
         .send(userCredential);
   
-      accessToken = loginResponse.body.data.accessToken;
+      accessToken = loginResponse.body.accessToken;
     });
   
     describe("should create a new user", () => {
