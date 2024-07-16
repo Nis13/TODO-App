@@ -15,15 +15,18 @@ export function seed(knex: Knex): Promise<void> {
       return knex(TABLE_NAME).insert([
         {
           title: "task 1",
-          completed: false
+          completed: false,
+          userId:1,
         },
         {
           title: "task 2",
           completed: false,
+          userId:2,
         },
         {
           title: "task 3",
           completed: false,
+          userId:2,
         },
       ]);
     });

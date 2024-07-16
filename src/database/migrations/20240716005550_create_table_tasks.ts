@@ -14,14 +14,15 @@ export async function up(knex: Knex): Promise<void> {
     table.bigIncrements();
 
     table.string("title", 50).notNullable();
-    table.boolean("Completed").notNullable();
+    table.boolean("completed").notNullable();
+    table.bigInteger("userId").unsigned().references("id").inTable("users");
 
     table.timestamp('created_at').notNullable().defaultTo(knex.raw('now()'));
     
     table
       .bigInteger('created_by')
       .unsigned()
-      .notNullable()
+      .nullable()
       .references('id')
       .inTable(TABLE_NAME);
       

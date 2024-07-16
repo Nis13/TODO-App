@@ -15,19 +15,19 @@ export function seed(knex: Knex): Promise<void> {
       return knex(TABLE_NAME).insert([
         {
           user_id: 1,
-          permission_id: 2,
+          permission_id: 5,
         },
         {
           user_id:1,
-          permission_id:3
+          permission_id:6
         },
         {
           user_id:2,
-          permission_id:1
+          permission_id:5
         },
         {
           user_id:2,
-          permission_id:2
+          permission_id:7
         }
       ]);
     });
