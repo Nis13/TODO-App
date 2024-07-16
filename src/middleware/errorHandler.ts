@@ -33,7 +33,5 @@ export function genericErrorHandler(error:Error,req:Request, res:Response, next:
           message: error.message,
         });
       }
-      return res.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: "Internal Server Error",
-      });
+      return res.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).json(error.message);
 }

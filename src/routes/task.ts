@@ -7,17 +7,17 @@ import { createTaskBodySchema, GetTaskQuerySchema, updateTaskBodySchema } from '
 
 const router = express();
 
-router.get('/',authenticate,authorize('admin'||'user'), getAllTasks);
+router.get('/',authenticate,authorize('get.allTasks'), getAllTasks);
 
-router.get("/task",authenticate, authorize('admin'||'user'),validateReqQuery(GetTaskQuerySchema), getTaskByQuery);
+router.get("/task",authenticate, authorize('get.taskByQuery'),validateReqQuery(GetTaskQuerySchema), getTaskByQuery);
 
-router.get("/:id",authenticate, authorize('admin'||'user'),getTaskById);
+router.get("/:id",authenticate, authorize('get.taskByID'),getTaskById);
 
-router.post("/",authenticate,authorize('admin'||'user'), validateReqBody(createTaskBodySchema), createTask);
+router.post("/",authenticate,authorize('post.createTask'), validateReqBody(createTaskBodySchema), createTask);
 
-router.put("/:id",authenticate,authorize('admin'||'user'),validateReqBody(updateTaskBodySchema), updateTask);
+router.put("/:id",authenticate,authorize('put.updateTask'),validateReqBody(updateTaskBodySchema), updateTask);
 
-router.delete("/:id",authenticate,authorize('admin'||'user'), deleteTask);
+router.delete("/:id",authenticate,authorize('delete.deleteTask'), deleteTask);
 
 
 export default router;

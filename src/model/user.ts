@@ -10,7 +10,9 @@ let users:User[]=[
     "email": "abc@gmail.com",
     "password": "$2b$10$AKn0qB51uGY384uKcEB1.OTKM4iBc81qSSHg6Gf.AX7UnRrjIDv8u",
     id: 1,
-    permissions: ['admin']
+    permissions: ['get.users','get.usersById','get.usersByQuery','post.createUser','put.updateUser','delete.deleteUser',
+        'get.allTasks','get.taskByQuery','get.taskByID','post.createTask','put.updateTask','delete.deleteTask'
+    ]
 
     }
 ];
@@ -37,7 +39,7 @@ export function createUser(user: User){
     const newUser = {
         ...user,
         id: users[users.length - 1].id + 1,
-        permissions: ['user']
+        permissions: ['get.allTasks','get.taskByQuery','get.taskByID','post.createTask','put.updateTask','delete.deleteTask']
       };
     
       users.push(newUser);
