@@ -5,9 +5,10 @@ import { BadRequestError } from "../error/BadRequestError";
 import { NotFoundError } from "../error/NotFoundError";
 import { GetUserQuery } from "../interface/user";
 
-export function getUsers(req: Request, res: Response, next: NextFunction) {
+export async function getUsers(req: Request<any,any,any,GetUserQuery>, res: Response, next: NextFunction) {
   try {
-    const data = UserService.getUsers();
+    const {query} = req;
+    const data = await UserService.getUsers(query);
     if (!data){
       throw(new BadRequestError("users data no accessible"));
     }
@@ -17,13 +18,13 @@ export function getUsers(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export function getUserById(req: Request, res: Response, next: NextFunction) {
+export async function getUserById(req: Request, res: Response, next: NextFunction) {
   try {
     const { id } = req.params;
     if (!id) {
       throw new BadRequestError("User ID is required");
     }
-    const data = UserService.getUserById(parseInt(id));
+    const data = await  UserService.getUserById(parseInt(id));
     if (!data) {
       throw new NotFoundError(`User with ID ${id} not found`);
     }
@@ -33,11 +34,11 @@ export function getUserById(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-export function getUserByQuery(req: Request<any,any,any,GetUserQuery>, res: Response) {
-  const {query} = req;
-  const data = UserService.getUserByQuery(query);
-  res.json(data)
-};
+// export function getUserByQuery(req: Request<any,any,any,GetUserQuery>, res: Response) {
+//   const {query} = req;
+//   const data = UserService.getUserByQuery(query);
+//   res.json(data)
+// };
 
 export async function createUser(
   req: Request,
@@ -69,8 +70,7 @@ export async function updateUser(
 
     if (!user) throw(new BadRequestError("user can't be updated"));
     res.status(HttpStatusCodes.OK).json({
-      message: "User updated successfully",
-      data: [user],
+      message: "User updated successfully"
     });
   } catch (error) {
     next(error);

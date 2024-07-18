@@ -7,11 +7,14 @@ export interface User{
 }
 
 export interface GetUserQuery{
-    q?:string;
+    q?:string,
+    page?:number,
+    size?:number
+
 }
 
-export interface Decoded{
-    id:string,
-    name:string,
-    email:string,
-}
+// export interface Decoded{
+//     id:string,
+//     name:string,
+//     email:string,
+// }

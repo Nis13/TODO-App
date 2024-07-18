@@ -4,7 +4,7 @@ import HttpStatusCodes from "http-status-codes";
 import { UnauthenticatedError } from "../error/UnauthenticatedError";
 import { NotFoundError } from "../error/NotFoundError";
 import { BadRequestError } from "../error/BadRequestError";
-import loggerWithNameSpace from "../utilis/logger";
+import loggerWithNameSpace from "../utils/logger";
 
 // export function notFoundError(req:Request , res:Response){
 //     return res.status(HttpStatusCodes.NOT_FOUND).json({

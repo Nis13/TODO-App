@@ -2,19 +2,19 @@ import {  GetUserQuery, User } from "../interface/user";
 import * as userModel from "../model/user";
 import bcrypt from "bcrypt";
 import { NotFoundError } from '../error/NotFoundError';
-import loggerWithNameSpace from '../utilis/logger';
+import loggerWithNameSpace from '../utils/logger';
 import { BadRequestError } from "../error/BadRequestError";
 
 const logger = loggerWithNameSpace("User Service");
 
-export function getUsers(){
+export function getUsers(query:GetUserQuery){
     logger.info(`get all users`);
-    return userModel.getUsers();
+    return userModel.UserModel.getUsers(query);
 }
 
-export function getUserById(id:number){
+export async function getUserById(id:number){
     logger.info(`get user by id`);
-    const data = userModel.getUserById(id);
+    const data = await userModel.UserModel.getUserById(id);
     if (!data){
         throw(new NotFoundError('user not found'));
     }
@@ -22,14 +22,15 @@ export function getUserById(id:number){
 };
 
 export function getUserByQuery(query:GetUserQuery){
-  const data = userModel.getUserByQuery(query);
+  // const data = userModel.getUserByQuery(query);
+  const data ='';
   if (!data) throw (new NotFoundError('user not found'));
   return data;
 }
 
 export async function createUser(user:User){
     logger.info(`create user`);
-    const existingUser = userModel.getUserByEmail(user.email);
+    const existingUser = await userModel.UserModel.getUserByEmail(user.email);
 
     if (existingUser) {
       const message = "User already exists";
@@ -38,33 +39,31 @@ export async function createUser(user:User){
 
     const password = await bcrypt.hash(user.password, 10);
     user.password = password;
-    
-    if (userModel.createUser(user))   return {
-     message:"User created successfully"
-    };;
+
+    return userModel.UserModel.create(user)
 }
 
 export function getUserByEmail(email:string){
     logger.info(`get user by email`);
-    const data = userModel.getUserByEmail(email);
+    const data = userModel.UserModel.getUserByEmail(email);
     return data;
 };
 
 export function updateUser(id: number, updatedUser: User){
     logger.info(`update user by id`);
-    const userExists = userModel.getUserById(id);
+    const userExists = userModel.UserModel.getUserById(id);
     if (!userExists) {
       throw new NotFoundError("user not found");
     }
-    const data = userModel.updateUser(id, updatedUser);
+    const data = userModel.UserModel.update(id, updatedUser);
     return data;
   };
 
   export function deleteUser(id: number) {
     logger.info(`delete user by id`);
-    const userToDelete = userModel.getUserById(id);
+    const userToDelete = userModel.UserModel.getUserById(id);
     if (!userToDelete) {
       throw (new NotFoundError('User not found'));
     }
-    return userModel.deleteUser(id);
+    return userModel.UserModel.deleteUser(id);
   }

@@ -4,6 +4,7 @@ import { JwtPayload, verify } from "jsonwebtoken";
 import { Request } from "../interface/auth";
 import { User } from "../interface/user";
 import { UnauthenticatedError } from "../error/UnauthenticatedError";
+import { UserModel } from "../model/user";
 
 export function authenticate(req: Request, res: Response, next: NextFunction) {
   const { authorization } = req.headers;
@@ -31,10 +32,12 @@ export function authenticate(req: Request, res: Response, next: NextFunction) {
 }
 
 export function authorize(permission: string) {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return async (req: Request, res: Response, next: NextFunction) => {
     const user = req.user!;
-
-    if (!user.permissions.includes(permission)) {
+    const userId = user.id;
+    const userPermissions = await UserModel.authorizeUser(userId);
+    console.log(userPermissions);
+    if (!userPermissions.some(p => p.permission === permission)) {
       next(new UnauthenticatedError("Forbidden"));
     }
     next();

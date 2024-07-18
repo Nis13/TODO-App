@@ -8,15 +8,15 @@ import { NotFoundError } from "../error/NotFoundError";
 export async function login(req: Request, res: Response, next: NextFunction) {
   const { body } = req;
   try {
-    // if (!body.name || !body.password) {
-    //   throw new BadRequestError("name and password are required");
-    // }
+    if (!body.name || !body.password) {
+      throw new BadRequestError("name and password are required");
+    }
 
     const data = await AuthService.login(body);
 
-    // if (!data) {
-    //   throw new UnauthenticatedError("Invalid name or password");
-    // }
+    if (!data) {
+      throw new UnauthenticatedError("Invalid name or password");
+    }
 
     res.status(HttpStatusCodes.OK).json(data);
   } catch (error) {

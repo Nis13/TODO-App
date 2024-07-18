@@ -1,89 +1,91 @@
+import { query } from 'express';
 import { Task } from "../interface/task";
 import { GetUserQuery } from "../interface/user";
-import loggerWithNameSpace from "../utilis/logger";
+// import { GetUserQuery, User } from "../interface/user";
+import loggerWithNameSpace from "../utils/logger";
+import { BaseModel } from "./base";
 
 const logger = loggerWithNameSpace("task Model");
 
-const tasks = [
-  {
-    id: 1,
-    title: "task 1 of user 1",
-    completed: false,
-    userId: 1,
-  },
-  {
-    id: 2,
-    title: "task 1 of user 2",
-    completed: false,
-    userId: 2,
-  },
-  {
-    id: 3,
-    title: "task 2 of user 1",
-    completed: false,
-    userId: 1,
-  },
-  {
-    id: 4,
-    title: "task 2 of user 2",
-    completed: false,
-    userId: 2,
-  },
-  {
-    id: 5,
-    title: "task 3 of user 1",
-    completed: false,
-    userId: 1,
-  },
-];
+export class TaskModel extends BaseModel {
 
-export function getAllTasks(userId: number) {
-  logger.info(`get all tasks`);
-  const tasksList = tasks.filter((task) => task.userId == userId);
-  return tasksList;
-}
+  static async createTask(title:string, userId:number){
+      const taskToCreate = {
+         title: title,
+         completed: false,
+         userId: userId
+      };
+      await this.queryBuilder().insert(taskToCreate).table("tasks");
 
-export function getTaskById(id: number, userId: number) {
-  logger.info(`get task by id`);
-  const tasksList = tasks.filter((task) => task.userId == userId);
-  return tasksList.find(({ id: taskId }) => taskId === id);
-}
-export function getTaskByQuery(query:GetUserQuery,userId: number){
-  const { q } = query;
-    if (q){
-        const tasksList = tasks.filter((task) => task.userId == userId);
-        return tasksList.find(({id:taskId})=>taskId === parseInt(q));
-    }
-}
 
-export function addTask(title: string, userId: number) {
-  logger.info(`create task`);
-  tasks.push({
-    title: title,
-    completed: false,
-    id: tasks[tasks.length - 1].id + 1,
-    userId: userId,
-  });
-  return "task is added";
-}
+      const createdTask = this.queryBuilder()
+      .select('id','title','completed')
+      .table("tasks")
+      .where("title",title)
 
-export function updateTaskById(id: number, task: Task, userId: number) {
-  logger.info(`update task`);
-  const taskIndex = tasks.findIndex(
-    (task) => task.id === id && task.userId === userId
-  );
-  if (taskIndex != -1) {
-    tasks[taskIndex] = { id, ...task };
-    return tasks[taskIndex];
+      return createdTask;
+
   }
-}
 
-export function deleteTaskById(id: number, userId: number) {
-  logger.info(`delete task`);
-  const tasksList = tasks.filter((task) => task.userId == userId);
-  const taskIndex = tasksList.findIndex((task) => task.id === id);
-  if (taskIndex != -1) {
-    tasks.splice(taskIndex, 1);
+  static async updateTask(id:number, task:Task,userId:number){
+      const taskToUpdate = {
+          title:task.title,
+          completed:task.completed,
+          userId: userId,
+          updatedAt: new Date(),
+      };
+
+      const query = await this.queryBuilder().update(taskToUpdate).table("tasks").where("id",id).where("userId",userId);
+
+      if (query){
+        return this.queryBuilder()
+        .select('id','title','completed')
+        .table("tasks")
+        .where("title",task.title)
+      }
   }
-  return tasks[taskIndex];
-}
+
+  static async getAllTasks(userId:number){
+    const query = this.queryBuilder()
+    .select({
+      id: "t.id",
+      title: "title",
+      completed: "completed",
+      username: "u.name",
+    })
+    .from({ t: "tasks" })
+    .innerJoin({ u: "users" }, { "t.userId": "u.id" })
+    .where("t.userId",userId);
+    const data = await query;
+    console.log(query.toString());
+    return data;
+  }
+
+  static async count(filter:GetUserQuery){
+      const { q } = filter;
+
+      const query = this.queryBuilder()
+      .count("*")
+      .table("users")
+      .first();
+      
+      if (q){
+          query.whereLike("name",`%${q}%`);
+      }
+
+      return query;
+  }
+
+
+  static async getTaskById(id:number,userId:number){
+      const query = this.queryBuilder().select('*').from("tasks").where("id",id).where("userId",userId).first();
+      const respone = await query;
+      console.log(respone);
+      return respone;
+  }
+
+  static async deleteTask(id: number,userId:number) {
+      await this.queryBuilder().from("tasks").where('id', id).where("userId",userId).delete();
+      return { message: 'User deleted successfully' };
+  }
+};

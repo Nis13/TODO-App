@@ -1,66 +1,128 @@
+
+import { permission } from "process";
 import { GetUserQuery, User } from "../interface/user";
-import loggerWithNameSpace from "../utilis/logger";
+import loggerWithNameSpace from "../utils/logger";
+import { BaseModel } from "./base";
 
 
 const logger = loggerWithNameSpace("User Model");
 
-let users:User[]=[
-    {
-    "name": "user 3",
-    "email": "abc@gmail.com",
-    "password": "$2b$10$AKn0qB51uGY384uKcEB1.OTKM4iBc81qSSHg6Gf.AX7UnRrjIDv8u",
-    id: 1,
-    permissions: ['get.users','get.usersById','get.usersByQuery','post.createUser','put.updateUser','delete.deleteUser',
-        'get.allTasks','get.taskByQuery','get.taskByID','post.createTask','put.updateTask','delete.deleteTask'
-    ]
+
+export class UserModel extends BaseModel {
+
+    static async create(user:User){
+        const userToCreate = {
+            name: user.name,
+            email: user.email,
+            password: user.password,
+        };
+        const query = await this.queryBuilder().insert(userToCreate).table("users");
+
+
+
+        if (query){
+            const userPermission = [6,7,8,9,10,11,12,13];
+            const userid = await this.queryBuilder()
+            .select('id')
+            .table("users")
+            .where("email",user.email)
+            .first()
+
+            for (const permissionId of userPermission){
+                await this.queryBuilder().insert({"userId":userid.id,"permissionId":permissionId}).table("userPermission");
+            }
+        }
+
+        const createdUser = await this.queryBuilder()
+        .select('id','name','email')
+        .table("users")
+        .where("email",user.email)
+
+        return createdUser;
 
     }
-];
 
-export function getUsers(){
-    logger.info(`get all users`);
-    return users;
-}
+    static async update(id:number, user:User){
+        const userToUpdate = {
+            name: user.name,
+            email: user.email,
+            password: user.password,
+            updatedAt: new Date(),
+        };
 
-export function getUserById(id:number){
-    logger.info(`get user by id`);
-    return users.find(({id:userId})=>userId === id);
-};
+        const query = this.queryBuilder().update(userToUpdate).table("users").where({id});
 
-export function getUserByQuery(query:GetUserQuery){
-    const { q } = query;
-    if (q){
-        return users.find(({id:userId})=>userId === parseInt(q));
+        console.log(query.toString());
+        await query;
+    }
+
+    static async getUsers(filter:GetUserQuery){
+        const { q } = filter;
+
+        const query = this.queryBuilder()
+        .select('id','name','email')
+        .table("users")
+        .limit(filter.size)
+        .offset((filter.page - 1) * filter.size);
+
+        if (q){
+            query.whereLike("name",`%${q}%`);
+        }
+
+        return query;
+    }
+    static async count(filter:GetUserQuery){
+        const { q } = filter;
+
+        const query = this.queryBuilder()
+        .count("*")
+        .table("users")
+        .first();
+        
+        if (q){
+            query.whereLike("name",`%${q}%`);
+        }
+
+        return query;
+    }
+
+    static async getUserByEmail(email: string) {
+        const query = this.queryBuilder().select('*').from("users").where("email", email).first();
+        const result = await query;
+        // const userPermissions =  this.queryBuilder().select('permission').from("permissions").innerjoin("permissions" , { "userPermissions.permission": "permission.id" })
+        return result;
+    }
+
+    static async getUserById(id:number){
+        const query = this.queryBuilder().select('*').from("users").where("id",id).first();
+        const respone = await query;
+        console.log(respone);
+        const userPermission  = await this.queryBuilder()
+        .select('*')
+        .from({ p: "permissions" })
+        .innerJoin({ u: "users" }, { "p.userId": "u.id" })
+        .innerJoin({ up: "userPermission" }, { "p.id": "up.permissionId" })
+        .where("u.id",id);
+        console.log(userPermission);
+        return respone;
+    }
+
+    static async deleteUser(id: number) {
+        await this.queryBuilder().from("users").where('id', id).delete();
+        return { message: 'User deleted successfully' };
+    }
+
+    static async authorizeUser(userId:number){
+        const userPermissions = await this.queryBuilder()
+        .select('permission')
+        .from({ p: "permissions" })
+        .innerJoin({ up: "userPermission" }, { "p.id": "up.permissionId" })
+        .where("up.userId",userId);
+
+        return userPermissions;
     }
 };
 
-export function createUser(user: User){
-    logger.info(`create user`);
-    const newUser = {
-        ...user,
-        id: users[users.length - 1].id + 1,
-        permissions: ['get.allTasks','get.taskByQuery','get.taskByID','post.createTask','put.updateTask','delete.deleteTask']
-      };
-    
-      users.push(newUser);
-      return newUser;
-}
 
-export function getUserByEmail(email:string){
-    logger.info(`get user by email`);
-    return users.find(({email:userEmail})=>userEmail=== email);
-};
 
-export const updateUser = (id: number, updatedUser: User): User => {
-    logger.info(`update user by id`);
-    let user = users.find(({ id: userId }) => userId === id);
-    user = { ...user, ...updatedUser };
-    users = [...users.filter(({ id: userId }) => userId !== id), user];
-  
-    return user;
-  };
 
-export function deleteUser(id: number) {
-    logger.info(`delete user by id`);
-    return (users = users.filter((user) =>user.id !== id));
-}

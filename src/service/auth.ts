@@ -1,17 +1,18 @@
 import bcrypt from "bcrypt";
 
 import { User } from "../interface/user";
+import { UserModel } from "../model/user";
 import { getUserByEmail } from "./user";
 import { sign, verify } from "jsonwebtoken";
 import config from "../config";
-import loggerWithNameSpace from "../utilis/logger";
+import loggerWithNameSpace from "../utils/logger";
 import { BadRequestError } from "../error/BadRequestError";
 
 const logger = loggerWithNameSpace("Auth Service");
 
 export async function login(body: Pick<User, "email" | "password">) {
   logger.info(`login`);
-  const existingUser = getUserByEmail(body.email);
+  const existingUser =  await UserModel.getUserByEmail(body.email);
 
   if (!existingUser) {
     throw (new BadRequestError("Invalid Email"));

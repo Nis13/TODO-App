@@ -7,10 +7,10 @@ import { BadRequestError } from "../error/BadRequestError";
 import { GetUserQuery } from "../interface/user";
 // import  {Request as ExpressRequest} from "express";
 
-export function getAllTasks(req: Request, res: Response, next: NextFunction) {
+export async function getAllTasks(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = req.user?.id;
-    const data = TaskService.getAllTasks(userId!);
+    const data = await TaskService.getAllTasks(userId!);
     if(!data) throw(new BadRequestError("users not accessible"));
     res.status(HttpStatusCodes.OK).json(data);
   } catch (error) {
@@ -32,34 +32,34 @@ export function getTaskById(req: Request, res: Response, next: NextFunction) {
     next(error);
   }
 }
-export function getTaskByQuery(
-  req: ExpressRequest<any,any,any,GetUserQuery>, res: Response) {
-  const {query} = req;
-  const userId = (req as Request).user?.id;
-  const data = TaskService.getTaskByQuery(query,userId!);
-  res.json(data)
-};
+// export function getTaskByQuery(
+//   req: ExpressRequest<any,any,any,GetUserQuery>, res: Response) {
+//   const {query} = req;
+//   const userId = (req as Request).user?.id;
+//   const data = TaskService.getTaskByQuery(query,userId!);
+//   res.json(data)
+// };
 
-export function createTask(req: Request, res: Response, next: NextFunction) {
+export async function createTask(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = req.user?.id;
     const task = req.body;
     if (!task || !task.title) {
       throw new BadRequestError("Task title is required");
     }
-    const data = TaskService.addTask(task.title, userId!);
+    const data = await TaskService.addTask(task.title, userId!);
     res.status(HttpStatusCodes.CREATED).json(data);
   } catch (error) {
     next(error);
   }
 }
 
-export function updateTask(req: Request, res: Response, next: NextFunction) {
+export async function updateTask(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = req.user?.id;
     const { id } = req.params;
     const { title, completed } = req.body;
-    const data = TaskService.updateTask(
+    const data = await TaskService.updateTask(
       parseInt(id),
       title,
       completed,
