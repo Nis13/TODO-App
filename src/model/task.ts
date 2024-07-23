@@ -1,72 +1,91 @@
+import { query } from 'express';
 import { Task } from "../interface/task";
+import { GetUserQuery } from "../interface/user";
+// import { GetUserQuery, User } from "../interface/user";
+import loggerWithNameSpace from "../utils/logger";
+import { BaseModel } from "./base";
 
-const tasks = [
-    {
-        id: 1,
-        title: "task 1 of user 1",
-        completed: false,
-        userId:1
-    },
-    {
-        id: 2,
-        title: "task 1 of user 2",
-        completed: false,
-        userId:2
-    },
-    {
-        id: 3,
-        title: "task 2 of user 1",
-        completed: false,
-        userId:1
-    },
-    {
-        id: 4,
-        title: "task 2 of user 2",
-        completed: false,
-        userId:2
-    },
-    {
-        id: 5,
-        title: "task 3 of user 1",
-        completed: false,
-        userId:1
-    }
-]
+const logger = loggerWithNameSpace("task Model");
 
-export function getAllTasks(userId:number){
-    const tasksList = tasks.filter((task) => task.userId == userId);
-    return tasksList;
-}
-export function getTaskById(id:number,userId:number){
-    const tasksList = tasks.filter((task) => task.userId == userId);
-    return tasksList.find(({id:taskId})=>taskId === id);
+export class TaskModel extends BaseModel {
+
+  static async createTask(title:string, userId:number){
+      const taskToCreate = {
+         title: title,
+         completed: false,
+         userId: userId
+      };
+      await this.queryBuilder().insert(taskToCreate).table("tasks");
+
+
+      const createdTask = this.queryBuilder()
+      .select('id','title','completed')
+      .table("tasks")
+      .where("title",title)
+
+      return createdTask;
+
+  }
+
+  static async updateTask(id:number, task:Task,userId:number){
+      const taskToUpdate = {
+          title:task.title,
+          completed:task.completed,
+          userId: userId,
+          updatedAt: new Date(),
+      };
+
+      const query = await this.queryBuilder().update(taskToUpdate).table("tasks").where("id",id).where("userId",userId);
+
+      if (query){
+        return this.queryBuilder()
+        .select('id','title','completed')
+        .table("tasks")
+        .where("title",task.title)
+      }
+  }
+
+  static async getAllTasks(userId:number){
+    const query = this.queryBuilder()
+    .select({
+      id: "t.id",
+      title: "title",
+      completed: "completed",
+      username: "u.name",
+    })
+    .from({ t: "tasks" })
+    .innerJoin({ u: "users" }, { "t.userId": "u.id" })
+    .where("t.userId",userId);
+    const data = await query;
+    console.log(query.toString());
+    return data;
+  }
+
+  static async count(filter:GetUserQuery){
+      const { q } = filter;
+
+      const query = this.queryBuilder()
+      .count("*")
+      .table("users")
+      .first();
+      
+      if (q){
+          query.whereLike("name",`%${q}%`);
+      }
+
+      return query;
+  }
+
+
+  static async getTaskById(id:number,userId:number){
+      const query = this.queryBuilder().select('*').from("tasks").where("id",id).where("userId",userId).first();
+      const respone = await query;
+      console.log(respone);
+      return respone;
+  }
+
+  static async deleteTask(id: number,userId:number) {
+      await this.queryBuilder().from("tasks").where('id', id).where("userId",userId).delete();
+      return { message: 'User deleted successfully' };
+  }
 };
-
-export function addTask(title:string, completed:boolean,userId:number){
-    tasks.push(
-        {
-            title:title,
-            completed:completed,
-            id: tasks[tasks.length-1].id +1,
-            userId:userId
-        }
-    )
-    return "task is added";
-}
-
-export function updateTaskById(id:number,task:Task,userId:number){
-    const taskIndex = tasks.findIndex(task => task.id === id && task.userId === userId);
-    if (taskIndex != -1){
-        tasks[taskIndex] =  {id,...task};
-        return tasks[taskIndex];
-    }
-    
-}
-
-export function deleteTaskById(id:number,userId:number){
-    const tasksList = tasks.filter((task) => task.userId == userId);
-    const taskIndex = tasksList.findIndex(task => task.id === id);
-    if (taskIndex != -1){
-        tasks.splice(taskIndex,1);
-    }
-}

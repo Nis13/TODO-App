@@ -2,15 +2,19 @@ export interface User{
     id:number,
     name:string,
     email:string,
-    password:string
+    password:string,
+    permissions:string[]
 }
 
 export interface GetUserQuery{
-    q?:string;
+    q?:string,
+    page?:number,
+    size?:number
+
 }
 
-export interface Decoded{
-    id:string,
-    name:string,
-    email:string,
-}
+// export interface Decoded{
+//     id:string,
+//     name:string,
+//     email:string,
+// }

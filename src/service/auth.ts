@@ -1,69 +1,69 @@
 import bcrypt from "bcrypt";
 
 import { User } from "../interface/user";
+import { UserModel } from "../model/user";
 import { getUserByEmail } from "./user";
 import { sign, verify } from "jsonwebtoken";
 import config from "../config";
+import loggerWithNameSpace from "../utils/logger";
+import { BadRequestError } from "../error/BadRequestError";
 
+const logger = loggerWithNameSpace("Auth Service");
 
-export async function login(body:Pick<User,'email' | 'password'>){
-    const existingUser = getUserByEmail(body.email);
+export async function login(body: Pick<User, "email" | "password">) {
+  logger.info(`login`);
+  const existingUser =  await UserModel.getUserByEmail(body.email);
 
-    if(!existingUser){
-        return {
-            error: "invalid email or password",
-        };
-    }
+  if (!existingUser) {
+    throw (new BadRequestError("Invalid Email"));
+  }
 
-    const isValidPassword = await bcrypt.compare(
-        body.password,
-        existingUser.password
-    )
+  const isValidPassword = await bcrypt.compare(
+    body.password,
+    existingUser.password
+  );
 
-    if(!isValidPassword){
-        return {
-            error: "invalid email or password",
-        };
-    }
+  if (!isValidPassword) {
+    throw( new BadRequestError("Invalid Password"))
+  }
+  
+  const payload = {
+    id: existingUser.id,
+    name: existingUser.name,
+    email: existingUser.email,
+    permissions: existingUser.permissions,
+  };
 
-    const payload = {
-        id:existingUser.id,
-        name: existingUser.name,
-        email:existingUser.email,
-    };
-    
-    const accessToken = await sign(payload, config.jwt.secret!,{
-        expiresIn:config.jwt.accessTokenExpiryMS,
-    });
+  const accessToken = await sign(payload, config.jwt.secret!, {
+    expiresIn: config.jwt.accessTokenExpiryMS,
+  });
 
-    const refreshToken = await sign(payload, config.jwt.secret!,{
-        expiresIn:config.jwt.refreshTokenExpityMS,
-    });
-    return {accessToken, refreshToken}
-
+  const refreshToken = await sign(payload, config.jwt.secret!, {
+    expiresIn: config.jwt.refreshTokenExpityMS,
+  });
+  return { accessToken, refreshToken };
 }
 
 export async function refresh(body: { refreshToken: string }) {
-    const { refreshToken } = body;
-  
-    if (!refreshToken) {
-      return {
-        error: "enter refresh token",
-      };
-    }
-    const decoded = verify(refreshToken, config.jwt.secret!);
-    if (typeof decoded === "string") {
-      return;
-    }
-  
-    const payload = {
-      id: decoded.id,
-      name: decoded.name,
-      email: decoded.email,
-    };
-  
-    const accessToken = sign(payload, config.jwt.secret!, {
-      expiresIn: config.jwt.accessTokenExpiryMS,
-    });
-    return {accessToken:accessToken} ;
+  logger.info(`refresh`);
+  const { refreshToken } = body;
+
+  if (!refreshToken) {
+    throw (new BadRequestError('please enter the refresh token'));
   }
+  const decoded = verify(refreshToken, config.jwt.secret!);
+  if (typeof decoded === "string") {
+    return;
+  }
+
+  const payload = {
+    id: decoded.id,
+    name: decoded.name,
+    email: decoded.email,
+  };
+
+  const accessToken = sign(payload, config.jwt.secret!, {
+    expiresIn: config.jwt.accessTokenExpiryMS,
+  });
+  return { accessToken: accessToken };
+}
